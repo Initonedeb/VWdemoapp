@@ -124,6 +124,16 @@ const PrestacionesManagement: React.FC<PrestacionesManagementProps> = ({ onBack,
     const [reportSelectedClientId, setReportSelectedClientId] = useState('all');
     const [generatedReport, setGeneratedReport] = useState<{ stats: any; data: Prestacion[] } | null>(null);
 
+    const normalizeFotoPath = (path: string) => path.replace(/\\/g, '/');
+
+    const buildFotosHtml = (fotos: string[]) =>
+        fotos
+            .map(
+                (foto) =>
+                    `<img src="http://localhost:3001/${normalizeFotoPath(foto)}" class="swal2-image" alt="Foto de devolución">`,
+            )
+            .join('');
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -923,20 +933,13 @@ const PrestacionesManagement: React.FC<PrestacionesManagementProps> = ({ onBack,
                                                     )}
                                                     {p.fotosDevolucion && p.fotosDevolucion.length > 0 && (
                                                         <button
-                                                            onClick={() => {
-                                                                const fotosHtml = p.fotosDevolucion
-                                                                    .map((foto) => {
-                                                                        const normalizedPath = foto.split('\\').join('/');
-                                                                        return `<img src="http://localhost:3001/${normalizedPath}" class="swal2-image" alt="Foto de devolución">`;
-                                                                    })
-                                                                    .join('');
-
+                                                            onClick={() =>
                                                                 Swal.fire({
                                                                     title: 'Fotos de Devolución',
-                                                                    html: fotosHtml,
+                                                                    html: buildFotosHtml(p.fotosDevolucion),
                                                                     showCloseButton: true,
-                                                                });
-                                                            }}
+                                                                })
+                                                            }
                                                             className="text-blue-500 hover:text-blue-600 p-2 rounded-md transition-colors"
                                                             title="Ver Fotos de Devolución"
                                                         >
