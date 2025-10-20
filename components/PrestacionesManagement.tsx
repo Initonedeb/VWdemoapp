@@ -922,11 +922,26 @@ const PrestacionesManagement: React.FC<PrestacionesManagementProps> = ({ onBack,
                                                         <button onClick={() => handleFinishLoan(p.id)} className="text-green-500 hover:text-green-600 p-2 rounded-md transition-colors" title="Registrar Devolución"><CheckCircleIcon className="h-5 w-5"/></button>
                                                     )}
                                                     {p.fotosDevolucion && p.fotosDevolucion.length > 0 && (
-                                                        <button onClick={() => Swal.fire({
-                                                            title: 'Fotos de Devolución',
-                                                            html: p.fotosDevolucion.map(foto => `<img src="http://localhost:3001/${foto.replace(/\\/g, '/')}" class="swal2-image" alt="Foto de devolución">`).join(''),
-                                                            showCloseButton: true,
-                                                        })} className="text-blue-500 hover:text-blue-600 p-2 rounded-md transition-colors" title="Ver Fotos de Devolución"><ImageIcon className="h-5 w-5"/></button>
+                                                        <button
+                                                            onClick={() => {
+                                                                const fotosHtml = p.fotosDevolucion
+                                                                    .map((foto) => {
+                                                                        const normalizedPath = foto.split('\\').join('/');
+                                                                        return `<img src="http://localhost:3001/${normalizedPath}" class="swal2-image" alt="Foto de devolución">`;
+                                                                    })
+                                                                    .join('');
+
+                                                                Swal.fire({
+                                                                    title: 'Fotos de Devolución',
+                                                                    html: fotosHtml,
+                                                                    showCloseButton: true,
+                                                                });
+                                                            }}
+                                                            className="text-blue-500 hover:text-blue-600 p-2 rounded-md transition-colors"
+                                                            title="Ver Fotos de Devolución"
+                                                        >
+                                                            <ImageIcon className="h-5 w-5" />
+                                                        </button>
                                                     )}
                                                     <button onClick={() => setModalDetails(p)} className="text-gray-500 hover:text-blue-800 p-2 rounded-md transition-colors" title="Ver Detalles"><InfoIcon className="h-5 w-5"/></button>
                                                     <button onClick={() => handlePrintPrestacion(p)} className="text-gray-500 hover:text-blue-800 p-2 rounded-md transition-colors" title="Imprimir"><PrintIcon className="h-5 w-5"/></button>
