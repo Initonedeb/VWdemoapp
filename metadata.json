@@ -1,0 +1,6 @@
+
+{
+  "name": "Sistema de Prestamos",
+  "description": "Una aplicación para gestionar prestamos de vehículos, clientes, y autos. Incluye diferentes roles de usuario como administrador y empleado.",
+  "requestFramePermissions": []
+}

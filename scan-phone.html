@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escaner QR de Vehículo</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #qr-reader {
+            width: 90%;
+            max-width: 500px;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #dddfe2;
+        }
+        #qr-reader-results {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #4B5563;
+        }
+        .status-message {
+            margin: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1em;
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        h1 {
+            color: #004085;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Escaner de Vehículos</h1>
+    <div id="qr-reader"></div>
+    <div id="qr-reader-results" class="status-message info">Iniciando cámara...</div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            const resultContainer = document.getElementById('qr-reader-results');
+            const scannerContainer = document.getElementById('qr-reader');
+            
+            html5QrcodeScanner.clear();
+            scannerContainer.style.display = 'none';
+            resultContainer.innerHTML = `Escaneo exitoso. ID de vehículo: ${decodedText}.<br>Puede cerrar esta ventana.`;
+            resultContainer.className = 'status-message success';
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session');
+            const vehicleId = decodedText;
+            
+            // Use window.location.hostname to get the IP of the computer running the server
+            const apiUrl = `http://${window.location.hostname}:3001/api/scan-sessions/${sessionId}`;
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ vehicleId: vehicleId }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al enviar el ID del vehículo al servidor.');
+                }
+                console.log('ID de vehículo enviado con éxito.');
+            })
+            .catch(error => {
+                console.error(error);
+                resultContainer.innerHTML = `Error: ${error.message}`;
+                resultContainer.className = 'status-message error';
+            });
+        }
+
+        function onScanFailure(error) {
+            // console.warn(`Code scan error = ${error}`);
+        }
+
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader", 
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            /* verbose= */ false);
+            
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('session')) {
+            const resultContainer = document.getElementById('qr-reader-results');
+            resultContainer.innerHTML = "Error: No se encontró un ID de sesión. Por favor, genere un nuevo QR desde la aplicación principal.";
+            resultContainer.className = 'status-message error';
+        } else {
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        }
+    </script>
+</body>
+</html>
